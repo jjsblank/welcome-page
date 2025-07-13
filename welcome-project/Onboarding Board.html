@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>Welcome to blank.</title>
+  <style>
+    /* Pretendard와 SUIT 폰트는 CDN으로 바로 불러오기 */
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css');
+    @import url('https://fonts.googleapis.com/css2?family=SUIT&display=swap');
+
+    /* [수정 완료] Blank Sans 폰트의 두 가지 두께(Bold, Book)를 웹에서 불러오기 */
+    @font-face {
+      font-family: 'Blank Sans';
+      font-weight: 700; /* Bold (굵은) */
+      src: url('https://raw.githubusercontent.com/jjsblank/welcome-page/main/welcome-project/blank-sans-bold.woff2') format('woff2');
+    }
+    @font-face {
+      font-family: 'Blank Sans';
+      font-weight: 400; /* Book (보통) - CSS에서는 400이 보통 두께입니다. */
+      src: url('https://raw.githubusercontent.com/jjsblank/welcome-page/main/welcome-project/blank-sans-book.woff2') format('woff2');
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      font-family: 'SUIT', sans-serif;
+      color: white;
+      height: 100vh;
+      position: relative;
+      overflow: hidden;
+    }
+
+    canvas#confetti-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    body::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.03), transparent 70%);
+      animation: ambient 20s linear infinite;
+      z-index: 0;
+    }
+
+    @keyframes ambient {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .fixed-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 1920px;
+      height: 1080px;
+      transform: translate(-50%, -50%) scale(1);
+      transform-origin: center center;
+      z-index: 1;
+    }
+
+    @keyframes slideInLeft {
+      from { transform: translateX(-100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    @keyframes fadeInScale {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes fadeInUp {
+      from { transform: translateY(40px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    @keyframes fadeInRight {
+      from { transform: translateX(100px); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .top-left {
+      position: absolute;
+      top: 40px;
+      left: 40px;
+      font-size: 60px;
+      font-family: "Blank Sans", 'SUIT', sans-serif;
+      font-weight: 700; /* Bold 폰트 적용 */
+      z-index: 1;
+      animation: slideInLeft 1s ease-out both;
+    }
+
+    .center-message {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      white-space: pre-line;
+      z-index: 1;
+    }
+
+    .center-message h1 {
+      font-size: 90px;
+      font-family: "Pretendard", sans-serif;
+      font-weight: 800;
+      margin-bottom: 20px;
+      animation: fadeInScale 1s ease-out both;
+      animation-delay: 0.3s;
+    }
+
+    .button-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 35px;
+      margin-top: -20px;
+      width: 300px; /* 버튼 영역의 전체 너비 지정 (조금 넓힘) */
+      margin-left: 70px;
+      margin-right: 20px;
+    }
+
+    /* --- [수정 완료] 기억했던 버튼 스타일로 덮어쓰기 --- */
+    .center-message .button {
+      background: #111;
+      color: white;
+      padding: 14px 35px;
+      font-size: 26px; /* 원래 스타일로 변경 */
+      font-weight: 500;
+      border: 1px solid #444;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(255,255,255,0.08);
+      cursor: pointer;
+      transition: all 0.4s ease;
+      animation: fadeInScale 1s ease-out both;
+      animation-delay: 0.6s;
+      white-space: nowrap; /* 줄바꿈 방지 */
+    }
+
+    .center-message .button:hover {
+      background: #f5f5f5;
+      color: #000; /* 오타 수정 */
+      box-shadow: 0 0 12px rgba(255, 255, 255, 0.3);
+    }
+
+    .emoji {
+      position: absolute;
+      width: 125px;
+      height: 125px;
+      animation: fadeIn 1s ease-out both, float-rotate 4s ease-in-out infinite;
+      z-index: 1;
+      cursor: pointer;
+    }
+    
+    .emoji img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .emoji1 { top: 40%; left: 73%; animation-delay: 1.0s, 0s; }
+
+    @keyframes float-rotate {
+      0%   { transform: translateY(0) rotate(0deg); }
+      50%  { transform: translateY(-20px) rotate(3deg); }
+      100% { transform: translateY(0) rotate(-3deg); }
+    }
+
+    .bottom-left {
+      position: absolute;
+      bottom: 30px;
+      left: 40px;
+      font-size: 32px;
+      font-family: "Pretendard", sans-serif;
+      font-weight: 200;
+      line-height: 0.5;
+      color: #cccccc;
+      z-index: 1;
+      animation: fadeInUp 1.5s ease-out both;
+      animation-delay: 1s;
+    }
+
+    .bounce-char {
+      display: inline-block;
+      transition: transform 0.3s;
+      cursor: pointer;
+    }
+
+    .bounce-char.bounce {
+      animation: bounce 0.6s ease;
+    }
+
+    @keyframes bounce {
+      0%   { transform: translateY(0); }
+      30%  { transform: translateY(-30px); }
+      60%  { transform: translateY(15px); }
+      100% { translateY(0); }
+    }
+
+    .bottom-left strong {
+      color: white;
+      font-weight: bold;
+    }
+
+    .bottom-right {
+      position: absolute;
+      bottom: 45px;
+      right: 40px;
+      z-index: 1;
+      animation: fadeInRight 1.5s ease-out both;
+      animation-delay: 2.5s;
+    }
+
+    .bottom-right img {
+      height: 115px;
+    }
+
+    #easter-egg-logo {
+      animation: logo-pulse 2s infinite;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    #easter-egg-logo:hover {
+      transform: scale(1.05);
+    }
+
+    #easter-egg-message {
+      position: fixed;
+      bottom: 120px;
+      right: 50px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #111;
+      padding: 20px 30px;
+      border-radius: 20px;
+      font-size: 24px;
+      font-weight: 600;
+      font-family: 'SUIT', sans-serif;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+      display: none;
+      z-index: 10;
+      animation: fade-pop 0.5s ease-out forwards;
+    }
+
+    @keyframes fade-pop {
+      0% { opacity: 0; transform: scale(0.8); }
+      100% { opacity: 1; transform: scale(1); }
+    }
+    
+    #goal-message {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 40px 60px;
+      background-color: rgba(0, 0, 0, 0.85);
+      border: 2px solid #fff;
+      border-radius: 20px;
+      color: #fff;
+      font-size: 50px;
+      font-weight: bold;
+      text-align: center;
+      z-index: 200;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.5s ease-in-out;
+    }
+    
+    #goal-message.show {
+        opacity: 1;
+    }
+
+    #fireworks-canvas {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        pointer-events: none;
+        z-index: 199;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="confetti-canvas"></canvas>
+  <canvas id="fireworks-canvas"></canvas>
+  <div id="goal-message">🎉 환영해요! 🎉</div>
+  
+  <div class="fixed-container">
+    <div class="top-left" id="top-left-text">Welcome, New blanker!</div>
+
+    <div class="center-message">
+      <h1 id="welcome-text">입사자 님,<br>블랭크 합류를 환영해요!</h1>
+      
+      <div class="button-grid">
+        <button class="button" onclick="window.open('https://docs.google.com/forms/d/1ZmaT6brR4odOzDF2BTTPZjaDkm0kkBe4UYtkK1f7Mbs/viewform?edit_requested=true', '_blank')">1. 지문 등록 & 웰컴키트</button>
+        <button class="button" onclick="window.open('https://accounts.google.com/v3/signin/identifier?continue=https%3A%2F%2Fmail.google.com%2Fmail%2F&ifkv=AdBytiN_oNoHm1SYvIUKOsdkh4lFmynoI7UoKoVGCHPQ9dWg68eL1qwd_nDK94lGE4lfdlzUrMj7&rip=1&sacu=1&service=mail&flowName=GlifWebSignIn&flowEntry=ServiceLogin&dsh=S-1541482670%3A1751441461197019');">2. Gmail / Slack 로그인</button>
+        <button class="button" onclick="alert('해당 항목은 블랭크 대외비입니다.😊');">3. 업무 세팅 체크리스트</button>
+        <button class="button" onclick="alert('해당 항목은 블랭크 대외비입니다.😊');">4. 블랭크 위키</button>
+      </div>
+
+    </div>
+
+    <div class="emoji emoji1">
+      <img src="https://raw.githubusercontent.com/jjsblank/welcome-page/1615cd1208a5da6d67b0d79ac344b017319478eb/welcome-project/Party%20popper.svg" alt="Party Popper">
+    </div>
+
+    <div class="bottom-left" id="slogan"></div>
+
+    <div class="bottom-right" id="easter-egg-logo">
+      <img src="https://github.com/jjsblank/welcome-page/blob/main/welcome-project/blank-logo-white.png?raw=true">
+    </div>
+
+    <div id="easter-egg-message">블랭크에 오신 걸 진심으로 환영해요💖</div>
+  </div>
+
+  <script>
+    // --- 기존 스크립트 ---
+    const params = new URLSearchParams(window.location.search);
+    const name = params.get('name') || '입사자';
+    const welcomeEl = document.getElementById("welcome-text");
+    welcomeEl.innerHTML = `${name} 님, <br>블랭크 합류를 환영해요!`;
+    function openPDF() {
+      const pdfUrl = "https://jjsblank.github.io/welcome-page/welcome-project/blank-day1-checklist.pdf" ;
+      window.open(pdfUrl, '_blank') ; 
+    }
+    const lines = ["<strong>삼</strong> : 행시를 넣는 항목입니다.", "<strong>행</strong> : 복한 하루 보내세요💖", "<strong>시</strong> : 원한 곳에서!"];
+    const sloganEl = document.getElementById("slogan");
+    lines.forEach(lineHTML => { const p = document.createElement("p"); const temp = document.createElement("span"); temp.innerHTML = lineHTML; temp.childNodes.forEach(node => { if (node.nodeType === Node.TEXT_NODE) { [...node.textContent].forEach(char => { const span = document.createElement("span"); span.classList.add("bounce-char"); span.textContent = char === ' ' ? '\u00A0' : char; span.addEventListener("mouseenter", () => { span.classList.add("bounce"); setTimeout(() => span.classList.remove("bounce"), 600); }); p.appendChild(span); }); } else if (node.nodeType === Node.ELEMENT_NODE && node.tagName === "STRONG") { const span = document.createElement("span"); span.classList.add("bounce-char"); const strong = document.createElement("strong"); strong.textContent = node.textContent; span.appendChild(strong); span.addEventListener("mouseenter", () => { span.classList.add("bounce"); setTimeout(() => span.classList.remove("bounce"), 600); }); p.appendChild(span); } }); sloganEl.appendChild(p); });
+    function applyBounceEffect(targetId) { const el = document.getElementById(targetId); const text = el.innerHTML.replace(/<br\s*\/?>/gi, '\n'); el.innerHTML = ''; for (const char of text) { if (char === '\n') { el.appendChild(document.createElement('br')); continue; } const span = document.createElement("span"); span.classList.add("bounce-char"); span.textContent = char === ' ' ? '\u00A0' : char; span.addEventListener("mouseenter", () => { span.classList.add("bounce"); setTimeout(() => span.classList.remove("bounce"), 600); }); el.appendChild(span); } }
+    applyBounceEffect("top-left-text"); applyBounceEffect("welcome-text");
+    const canvas = document.getElementById('confetti-canvas'); const ctx = canvas.getContext('2d'); let particles = [];
+    function resizeCanvas() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; } resizeCanvas(); window.addEventListener('resize', resizeCanvas);
+    function createParticle() { const colors = ['#ffcc00', '#ff6666', '#66ccff', '#99ff99', '#ffffff']; return { x: Math.random() * canvas.width, y: -10, size: Math.random() * 4 + 3, speedY: Math.random() * 3 + 2, speedX: (Math.random() - 0.5) * 4, color: colors[Math.floor(Math.random() * colors.length)], angle: Math.random() * Math.PI * 2 }; }
+    function updateParticles() { ctx.clearRect(0, 0, canvas.width, canvas.height); particles.forEach((p, i) => { p.x += p.speedX; p.y += p.speedY; p.angle += 0.05; ctx.beginPath(); ctx.fillStyle = p.color; ctx.ellipse(p.x, p.y, p.size, p.size * 0.4, p.angle, 0, 2 * Math.PI); ctx.fill(); if (p.y > canvas.height) particles[i] = createParticle(); }); requestAnimationFrame(updateParticles); } for (let i = 0; i < 50; i++) { particles.push(createParticle()); } updateParticles();
+    const fixedContainer = document.querySelector('.fixed-container'); function resizeFixedContainer() { const scaleX = window.innerWidth / 1920; const scaleY = window.innerHeight / 1080; const scale = Math.min(scaleX, scaleY); fixedContainer.style.transform = `translate(-50%, -50%) scale(${scale})`; } window.addEventListener('resize', resizeFixedContainer); window.addEventListener('load', resizeFixedContainer);
+    
+    let isEasterEggMessageVisible = false;
+    function showEasterEggMessage() {
+        if (isEasterEggMessageVisible) return;
+        isEasterEggMessageVisible = true;
+        const msg = document.getElementById("easter-egg-message");
+        msg.style.display = "block";
+        msg.style.animation = "fade-pop 0.5s ease-out";
+        setTimeout(() => { msg.style.animation = ""; }, 500);
+        setTimeout(() => {
+            msg.style.display = "none";
+            isEasterEggMessageVisible = false;
+        }, 4000);
+    }
+    document.getElementById("easter-egg-logo").addEventListener("click", showEasterEggMessage);
+
+
+    /* --- 이모지 물리 효과 스크립트 --- */
+    document.addEventListener('DOMContentLoaded', () => {
+        const kickableEmoji = document.querySelector('.emoji.emoji1');
+        const container = document.querySelector('.fixed-container');
+        const goalMessage = document.getElementById('goal-message');
+        
+        const containerWidth = 1920;
+        const containerHeight = 1080;
+
+        let emojiState = { x: 0, y: 0, vx: 0, vy: 0, radius: 55, rotation: 0, rotationSpeed: 0 };
+        let mouse = { x: 0, y: 0, px: 0, py: 0 };
+        let isGoal = false;
+        let isPhysicsActive = false;
+        let inactivityTimerId = null; 
+
+        const walls = [];
+
+        function getTextRectsByLine(element) {
+            const lineRects = [];
+            const spans = element.querySelectorAll('.bounce-char');
+            if (spans.length === 0) {
+                if(element.offsetParent !== null) lineRects.push(element.getBoundingClientRect());
+                return lineRects;
+            }
+
+            const lines = new Map();
+
+            spans.forEach(span => {
+                const rect = span.getBoundingClientRect();
+                if (rect.width === 0 && rect.height === 0) return;
+
+                const lineTop = Math.round(rect.top);
+                if (!lines.has(lineTop)) {
+                    lines.set(lineTop, []);
+                }
+                lines.get(lineTop).push(rect);
+            });
+
+            lines.forEach(rectsOnLine => {
+                const lineLeft = Math.min(...rectsOnLine.map(r => r.left));
+                const lineRight = Math.max(...rectsOnLine.map(r => r.right));
+                const lineTop = rectsOnLine[0].top;
+                const lineBottom = rectsOnLine[0].bottom;
+                
+                lineRects.push({ 
+                    left: lineLeft, 
+                    right: lineRight, 
+                    top: lineTop, 
+                    bottom: lineBottom 
+                });
+            });
+
+            return lineRects;
+        }
+
+        // ==========================================================
+        // ===== [수정된 부분] "보이지 않는 벽" 문제를 해결하기 위한 수정 =====
+        // ==========================================================
+        function updateWallRects() {
+            walls.length = 0;
+
+            // [수정] 정교한 줄별 충돌 감지가 필요한 모든 텍스트 요소를 이 배열에 넣습니다.
+            const textElements = [
+                document.getElementById('top-left-text'),
+                document.getElementById('welcome-text'), // 단일 사각형 방식에서 줄별 감지 방식으로 변경
+                document.getElementById('slogan')        // 단일 사각형 방식에서 줄별 감지 방식으로 변경
+            ];
+
+            // [수정] 단일 사각형 충돌 감지로 충분한 요소들만 이 배열에 남깁니다.
+            const otherElements = [
+                ...document.querySelectorAll('.button-grid .button'),
+                document.getElementById('easter-egg-logo')
+            ];
+            
+            textElements.forEach(el => {
+                if (el) {
+                    const rects = getTextRectsByLine(el);
+                    rects.forEach(r => walls.push({ rect: r, element: el }));
+                }
+            });
+            
+            otherElements.forEach(el => {
+                if (el) {
+                    walls.push({ rect: el.getBoundingClientRect(), element: el });
+                }
+            });
+        }
+        
+        window.addEventListener('resize', updateWallRects);
+        setTimeout(updateWallRects, 500);
+
+        function getContainerScale() { const transform = window.getComputedStyle(container).transform; if (transform === 'none') return 1; const matrix = transform.match(/matrix\((.+)\)/); return matrix ? parseFloat(matrix[1].split(', ')[0]) : 1; }
+        function screenToContainerCoords(screenX, screenY) { const containerRect = container.getBoundingClientRect(); const scale = getContainerScale(); return { x: (screenX - containerRect.left) / scale, y: (screenY - containerRect.top) / scale }; }
+        
+        function resetEmoji() {
+            goalMessage.classList.remove('show');
+            isGoal = false;
+            isPhysicsActive = false;
+            kickableEmoji.style.display = 'block';
+
+            clearTimeout(inactivityTimerId); 
+            inactivityTimerId = null;
+            
+            kickableEmoji.style.animation = 'fadeIn 1s ease-out both, float-rotate 4s ease-in-out infinite';
+            kickableEmoji.style.top = '40%';
+            kickableEmoji.style.left = '73%';
+            kickableEmoji.style.transform = '';
+            
+            kickableEmoji.addEventListener('mouseover', activatePhysics, { once: true });
+        }
+
+        function activatePhysics() {
+            if (isPhysicsActive) return;
+            isPhysicsActive = true;
+
+            updateWallRects();
+
+            const rect = kickableEmoji.getBoundingClientRect();
+            const containerRect = container.getBoundingClientRect();
+            const scale = getContainerScale();
+            emojiState.x = ((rect.left + rect.right) / 2 - containerRect.left) / scale;
+            emojiState.y = ((rect.top + rect.bottom) / 2 - containerRect.top) / scale;
+            emojiState.vx = 0;
+            emojiState.vy = 0;
+            
+            kickableEmoji.style.animation = 'none';
+            kickableEmoji.style.top = '0px';
+            kickableEmoji.style.left = '0px';
+        }
+        
+        kickableEmoji.addEventListener('mouseover', activatePhysics, { once: true });
+
+        document.addEventListener('mousemove', e => { mouse.px = mouse.x; mouse.py = mouse.y; const { x, y } = screenToContainerCoords(e.clientX, e.clientY); mouse.x = x; mouse.y = y; });
+
+        function gameLoop() {
+            requestAnimationFrame(gameLoop);
+            if (isGoal) return;
+            
+            if (isPhysicsActive) {
+                emojiState.vx *= 0.98; emojiState.vy *= 0.98; emojiState.vy += 0.08;
+                emojiState.x += emojiState.vx; emojiState.y += emojiState.vy;
+                emojiState.rotation += emojiState.rotationSpeed; emojiState.rotationSpeed *= 0.98;
+                
+const dx = emojiState.x - mouse.x;
+const dy = emojiState.y - mouse.y;
+const distance = Math.sqrt(dx * dx + dy * dy);
+
+if (distance < emojiState.radius) {
+    // 1. 마우스가 얼마나 빠르게 움직이는지 계산
+    const mouseVX = mouse.x - mouse.px;
+    const mouseVY = mouse.y - mouse.py;
+
+    // 2. 이모지와 마우스의 각도 계산
+    const angle = Math.atan2(dy, dx);
+
+    // 3. 밀어내는 힘의 크기 (마우스 속도와 반비례 거리 기반)
+    // 마우스가 빠를수록, 그리고 이모지 중앙에 가까울수록 강하게 밀어냅니다.
+    const mouseSpeed = Math.sqrt(mouseVX*mouseVX + mouseVY*mouseVY);
+    const repulsion = Math.min(mouseSpeed * 0.8 + (emojiState.radius - distance) * 0.2, 15); // 힘의 최대치 설정
+
+    // 4. 기존 속도에 밀어내는 힘을 더해줌 (+=)
+    emojiState.vx += Math.cos(angle) * repulsion;
+    emojiState.vy += Math.sin(angle) * repulsion;
+    
+    // 5. 회전 효과도 추가
+    emojiState.rotationSpeed += (mouseVX - mouseVY) * 0.05;
+}
+                
+                const restitution = -0.9;
+                if (emojiState.x - emojiState.radius < 0) { emojiState.x = emojiState.radius; emojiState.vx *= restitution; }
+                if (emojiState.x + emojiState.radius > containerWidth) { emojiState.x = containerWidth - emojiState.radius; emojiState.vx *= restitution; }
+                if (emojiState.y - emojiState.radius < 0) { emojiState.y = emojiState.radius; emojiState.vy *= restitution; }
+                if (emojiState.y + emojiState.radius > containerHeight) { emojiState.y = containerHeight - emojiState.radius; emojiState.vy *= restitution; }
+                const containerRect = container.getBoundingClientRect(); const scale = getContainerScale();
+                
+                walls.forEach(wallObject => {
+                    const wallRect = wallObject.rect;
+                    const wall = { left: (wallRect.left - containerRect.left) / scale, right: (wallRect.right - containerRect.left) / scale, top: (wallRect.top - containerRect.top) / scale, bottom: (wallRect.bottom - containerRect.top) / scale };
+                    
+                    if (emojiState.x + emojiState.radius > wall.left && emojiState.x - emojiState.radius < wall.right && emojiState.y + emojiState.radius > wall.top && emojiState.y - emojiState.radius < wall.bottom) {
+                        const overlapX = (emojiState.x < (wall.left + wall.right) / 2) ? (emojiState.x + emojiState.radius) - wall.left : wall.right - (emojiState.x - emojiState.radius);
+                        const overlapY = (emojiState.y < (wall.top + wall.bottom) / 2) ? (emojiState.y + emojiState.radius) - wall.top : wall.bottom - (emojiState.y - emojiState.radius);
+                        
+                        if (overlapX < overlapY) {
+                            emojiState.vx *= restitution;
+                            emojiState.x += (emojiState.vx > 0 ? 1 : -1) * overlapX;
+                        } else {
+                            emojiState.vy *= restitution;
+                            emojiState.y += (emojiState.vy > 0 ? 1 : -1) * overlapY;
+                        }
+
+                        if (wallObject.element.id === 'easter-egg-logo') {
+                            showEasterEggMessage();
+                        }
+                    }
+                });
+                
+                const isMoving = Math.abs(emojiState.vx) > 0.1 || Math.abs(emojiState.vy) > 0.1 || Math.abs(emojiState.rotationSpeed) > 0.1;
+                if (isMoving) { clearTimeout(inactivityTimerId); inactivityTimerId = null; } else { if (!inactivityTimerId) { inactivityTimerId = setTimeout(resetEmoji, 1000); } }
+                
+                if (emojiState.x > containerWidth - 150 && emojiState.y < 150) { isGoal = true; goalMessage.classList.add('show'); kickableEmoji.style.display = 'none'; triggerFireworks(); clearTimeout(inactivityTimerId); inactivityTimerId = null; setTimeout(resetEmoji, 2000); }
+                
+                kickableEmoji.style.transform = `translate(${emojiState.x - emojiState.radius}px, ${emojiState.y - emojiState.radius}px) rotate(${emojiState.rotation}deg)`;
+            }
+        }
+        gameLoop();
+        
+        const fireworksCanvas = document.getElementById('fireworks-canvas'); const fireworksCtx = fireworksCanvas.getContext('2d'); let fireworkParticles = [];
+        function resizeFireworksCanvas() { fireworksCanvas.width = window.innerWidth; fireworksCanvas.height = window.innerHeight; } window.addEventListener('resize', resizeFireworksCanvas); resizeFireworksCanvas();
+        function triggerFireworks() { const containerRect = container.getBoundingClientRect(); const scale = getContainerScale(); const goalX = containerRect.left + (containerWidth - 75) * scale; const goalY = containerRect.top + 75 * scale; for(let i=0; i<100; i++) { fireworkParticles.push(createFireworkParticle(goalX, goalY)); } if(fireworkParticles.length > 0) animateFireworks(); }
+        function createFireworkParticle(x, y) { const angle = Math.random() * Math.PI * 2; const speed = Math.random() * 8 + 2; const colors = ['#ffcc00', '#ff6666', '#66ccff', '#99ff99', '#ffffff']; return { x: x, y: y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, color: colors[Math.floor(Math.random() * colors.length)], size: Math.random() * 3 + 2, alpha: 1, decay: Math.random() * 0.02 + 0.01 }; }
+        function animateFireworks() { fireworksCtx.clearRect(0, 0, fireworksCanvas.width, fireworksCanvas.height); let stillAnimating = false; fireworkParticles.forEach((p) => { if(p.alpha > 0.01) { stillAnimating = true; p.x += p.vx; p.y += p.vy; p.vy += 0.1; p.alpha -= p.decay; fireworksCtx.globalAlpha = p.alpha; fireworksCtx.beginPath(); fireworksCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2, false); fireworksCtx.fillStyle = p.color; fireworksCtx.fill(); } }); fireworksCtx.globalAlpha = 1; if (stillAnimating) { requestAnimationFrame(animateFireworks); } else { fireworkParticles = []; } }
+    });
+  </script>
+</body>
+</html>
